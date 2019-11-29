@@ -3,4 +3,6 @@
     <string name="stop">停止</string>
     <string name="start">開始</string>
     <string name="clear">クリア</string>
+    <string name="add">+</string>
+    <string name="subtract">ー</string>
 </resources>

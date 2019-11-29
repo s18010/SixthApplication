@@ -13,14 +13,16 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var soundPool: SoundPool
     private var soundResId = 0
+    private var timeLeft = 0L
+    private val defaultTime = 1000L * 3 * 1
+    private val maxTime = 1000L * 60 * 60 - 1000
 
     inner class MyCountDownTimer(millisInFuture: Long, countDownInterval: Long) :
         CountDownTimer(millisInFuture, countDownInterval) {
 
         override fun onTick(millisUntilFinished: Long) {
-            val minute = millisUntilFinished / 1000L / 60L
-            val second = millisUntilFinished / 1000L % 60L
-            timerText.text = "%1d:%2$02d".format(minute, second)
+            timeLeft = millisUntilFinished
+            draw()
         }
 
         override fun onFinish() {
@@ -29,16 +31,54 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun convertTime(millisUntilFinished: Long): String {
+        val minuteLeft = millisUntilFinished / 1000L / 60L
+        val secondLeft = millisUntilFinished / 1000L % 60L
+        return "%1d:%2$02d".format(minuteLeft, secondLeft)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        timerText.text = "3:00"
-        val defaultTimer = MyCountDownTimer(3 * 60 * 1000, 100)
+        timeLeft = defaultTime
+        var timer = MyCountDownTimer(timeLeft, 100)
+        draw()
 
-        startButton.setOnClickListener { defaultTimer.start() }
-        stopButton.setOnClickListener { defaultTimer.cancel() }
-//        clearButton.setOnClickListener { defaultTimer.}
+        startButton.setOnClickListener {
+            timer = MyCountDownTimer(timeLeft, 100)
+            timer.start()
+        }
+
+        pauseButton.setOnClickListener {
+            timer.cancel()
+        }
+
+        clearButton.setOnClickListener {
+            timer.cancel()
+            timeLeft = defaultTime
+            draw()
+        }
+
+        addButton.setOnClickListener {
+            timeLeft += 1000
+            if (timeLeft > maxTime) {
+                timeLeft = maxTime
+            }
+            draw()
+        }
+
+        subtractButton.setOnClickListener {
+            timeLeft -= 1000
+            if (timeLeft < 0L) {
+                timeLeft = 0
+            }
+            draw()
+        }
+    }
+
+    private fun draw() {
+        timerText.text = convertTime(timeLeft)
     }
 
     override fun onResume() {
