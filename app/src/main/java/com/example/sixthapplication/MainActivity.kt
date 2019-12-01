@@ -1,18 +1,15 @@
 package com.example.sixthapplication
 
-import android.media.AudioAttributes
-import android.media.AudioManager
-import android.media.SoundPool
-import android.os.Build
+import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
 import kotlinx.android.synthetic.main.activity_main.*
 
+
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var soundPool: SoundPool
-    private var soundResId = 0
+    private lateinit var player: MediaPlayer
     private var timeLeft = 0L
     private val defaultTime = 1000L * 3 * 1
     private val maxTime = 1000L * 60 * 60 - 1000
@@ -27,7 +24,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onFinish() {
             timerText.text = "0:00"
-            soundPool.play(soundResId, 1.0f, 100f, 0, 0, 1.0f)
+            player.start()
         }
     }
 
@@ -36,6 +33,7 @@ class MainActivity : AppCompatActivity() {
         val secondLeft = millisUntilFinished / 1000L % 60L
         return "%1d:%2$02d".format(minuteLeft, secondLeft)
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +56,7 @@ class MainActivity : AppCompatActivity() {
             timer.cancel()
             timeLeft = defaultTime
             draw()
+            player.pause()
         }
 
         addButton.setOnClickListener {
@@ -75,32 +74,12 @@ class MainActivity : AppCompatActivity() {
             }
             draw()
         }
+
+        player = MediaPlayer.create(this, R.raw.bellsound)
+        player.isLooping = true
     }
 
     private fun draw() {
         timerText.text = convertTime(timeLeft)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        soundPool =
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                @Suppress("DEPRECATION")
-                SoundPool(2, AudioManager.STREAM_ALARM, 0)
-            } else {
-                val audioAttributes = AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .build()
-                SoundPool.Builder()
-                    .setMaxStreams(1)
-                    .setAudioAttributes(audioAttributes)
-                    .build()
-            }
-        soundResId = soundPool.load(this, R.raw.bellsound, 1)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        soundPool.release()
     }
 }
